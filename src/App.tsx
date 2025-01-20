@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useInView } from 'react-intersection-observer';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+// import { useInView } from 'react-intersection-observer';
 import { Compass, Phone, Mail, Instagram, ChevronRight, Star, Users, Home, Building2 } from 'lucide-react';
 
 // Animation variants
@@ -24,22 +24,59 @@ const containerVariant = {
   }
 };
 
+
+
 const App = () => {
-  const [activeImage, setActiveImage] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  const heroImages = [
+    // 'Assets/FAMILY WALL.jpg',
+    // 'Assets/sofa.jpg',
+    // 'Assets/TV FRONT.jpg',
+    // 'Assets/mandir.jpg'
+    'https://www.decorilla.com/online-decorating/wp-content/uploads/2023/12/Modern-interior-design-ideas-2025-by-Decorilla-scaled.jpeg',
+    'https://www.hindustantimes.com/ht-img/img/2024/09/20/550x309/Home_1726802836584_1726802837761.png',
+    'https://mojoboutique.com/cdn/shop/articles/what_interior_design_style_uses_plants_1344x.jpg?v=1710240081',
+    'https://evolveindia.co/wp-content/uploads/2021/07/1_The-Wooden-Rhapsody-Modern-Bedroom-Interior-Design.jpg'
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Animation variants
+  const slideVariants = {
+    enter: {
+      x: '100%',
+      opacity: 0
+    },
+    center: {
+      x: 0,
+      opacity: 1
+    },
+    exit: {
+      x: '-100%',
+      opacity: 0
+    }
+  };
   
   const portfolioItems = [
     {
-      image: "/api/placeholder/800/600",
+      image: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0",
       title: "Modern Minimalist Living Room",
       description: "A blend of comfort and contemporary design"
     },
     {
-      image: "/api/placeholder/800/600",
+      image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace",
       title: "Scandinavian Kitchen",
       description: "Clean lines meet functional elegance"
     },
     {
-      image: "/api/placeholder/800/600",
+      image: "https://images.unsplash.com/photo-1616137466211-f939a420be84",
       title: "Luxury Master Bedroom",
       description: "Where comfort meets sophistication"
     }
@@ -63,6 +100,8 @@ const App = () => {
     }
   ];
 
+  
+  
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -82,44 +121,67 @@ const App = () => {
       </nav>
 
       {/* Hero Section */}
-      <div
-        className="h-screen relative bg-gray-900 bg-fixed bg-cover bg-center"
-        style={{ backgroundImage: "url('./Assets/IMG_2269.jpeg')" }}
-      >
-        <div className="absolute inset-0 bg-black opacity-50"></div>
-        <motion.div 
-          initial="hidden"
-          animate="visible"
-          variants={containerVariant}
-          className="absolute inset-0 flex flex-col justify-center items-center text-white px-4"
+      <div className="h-screen relative overflow-hidden">
+        {/* Image Container */}
+        <motion.div
+          key={currentIndex}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          variants={slideVariants}
+          transition={{
+            x: { type: "spring", stiffness: 300, damping: 30 },
+            opacity: { duration: 0.2 }
+          }}
+          className="absolute inset-0 w-full h-full"
         >
-          <motion.div variants={fadeInUp}>
-            <Compass className="w-16 h-16 mb-6" />
-          </motion.div>
+          <div 
+            className="absolute inset-0 bg-cover bg-center w-full h-full"
+            style={{ 
+              backgroundImage: `url('${heroImages[currentIndex]}')`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-50" />
+        </motion.div>
+
+        {/* Content */}
+        <div className="relative z-10 h-full flex flex-col justify-center items-center text-white px-4">
           <motion.h1 
-            variants={fadeInUp}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
             className="text-6xl font-bold mb-6 text-center"
           >
             Vatsalya Interior
           </motion.h1>
-          <motion.p 
-            variants={fadeInUp}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
             className="text-2xl text-center max-w-2xl mb-8"
           >
             Creating timeless interiors that inspire and elevate your daily living
           </motion.p>
-          <motion.a 
-            variants={fadeInUp}
-            href="#portfolio" 
-            className="border border-white px-8 py-3 hover:bg-white hover:text-black transition-all duration-300"
-          >
-            View Our Work
-          </motion.a>
-        </motion.div>
+        </div>
+
+        {/* Navigation Dots */}
+        <div className="absolute bottom-8 left-0 right-0 z-20 flex justify-center gap-2">
+          {heroImages.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentIndex(index)}
+              className={`w-3 h-3 rounded-full transition-all ${
+                index === currentIndex ? 'bg-white scale-100' : 'bg-white/50 scale-75'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
       </div>
 
 
-      {/* Services Section */}
 {/* Services Section */}
 <div id="services" className="py-24 px-4 bg-gray-900 text-white">
   <motion.div 
@@ -188,54 +250,33 @@ const App = () => {
 </div>
 
 
-
-      {/* Portfolio Section */}
-      <div id="portfolio" className="py-24 bg-gray-50">
-        <motion.div 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={containerVariant}
-          className="max-w-6xl mx-auto px-4"
-        >
-          <motion.h2 
-            variants={fadeInUp}
-            className="text-4xl font-bold text-center mb-4"
-          >
-            Our Work
-          </motion.h2>
-          <motion.p 
-            variants={fadeInUp}
-            className="text-center text-gray-600 mb-16 max-w-2xl mx-auto"
-          >
-            A curated selection of our finest projects
-          </motion.p>
-          <motion.div 
-            variants={containerVariant}
-            className="grid md:grid-cols-3 gap-8"
-          >
+{/* Portfolio Section */}
+<div id="portfolio" className="py-24 bg-[#f8f5f2]">
+        <div className="max-w-6xl mx-auto px-4">
+          <h2 className="font-playfair text-4xl font-semibold text-center mb-4 tracking-elegant">Our Work</h2>
+          <p className="text-center text-gray-600 mb-16 max-w-2xl mx-auto tracking-wide">A curated selection of our finest projects</p>
+          <div className="grid md:grid-cols-3 gap-8">
             {portfolioItems.map((item, index) => (
-              <motion.div 
+              <div 
                 key={index}
-                variants={fadeInUp}
                 className="group relative overflow-hidden rounded-lg cursor-pointer"
-                onClick={() => setActiveImage(index)}
+                // onClick={() => setActiveImage(index)}
               >
                 <img 
                   src={item.image} 
                   alt={item.title}
-                  className="w-full h-64 object-cover transform group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-[400px] object-cover transform group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 flex items-center justify-center">
                   <div className="text-white text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4">
-                    <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                    <p className="text-sm">{item.description}</p>
+                    <h3 className="font-playfair text-xl font-medium mb-2 tracking-wide">{item.title}</h3>
+                    <p className="text-sm tracking-wide">{item.description}</p>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
 
       {/* Testimonial Section */}
